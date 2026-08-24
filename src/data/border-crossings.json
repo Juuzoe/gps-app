@@ -1,0 +1,28 @@
+[
+  {
+    "states": [
+      "IN",
+      "IL"
+    ],
+    "road": "I70",
+    "label": "I-70 @ Indiana/Illinois line (Terre Haute)",
+    "crossing": {
+      "lat": 39.436696,
+      "lng": -87.531233
+    },
+    "bearingAtoB": 255
+  },
+  {
+    "states": [
+      "IL",
+      "MO"
+    ],
+    "road": "I255",
+    "label": "I-255 @ Jefferson Barracks Bridge (Mississippi River)",
+    "crossing": {
+      "lat": 38.486131,
+      "lng": -90.273208
+    },
+    "bearingAtoB": 291
+  }
+]

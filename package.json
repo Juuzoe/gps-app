@@ -1,0 +1,28 @@
+{
+  "name": "gps-path",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Engine that converts written turn instructions into drivable navigation routes with an animated GPS map (single-file HTML output).",
+  "scripts": {
+    "dev": "node scripts/build.mjs --watch --serve",
+    "build": "node scripts/build.mjs",
+    "check": "tsc --noEmit",
+    "anchors": "node scripts/derive-anchors.mjs",
+    "fallback": "node scripts/fetch-fallback.mjs",
+    "gif": "node scripts/record-gif.mjs",
+    "video": "node scripts/record-video.mjs"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.12",
+    "esbuild": "^0.25.0",
+    "ffmpeg-static": "^5.3.0",
+    "gifenc": "^1.0.3",
+    "pngjs": "^7.0.0",
+    "puppeteer-core": "^24.0.0",
+    "typescript": "^5.6.0"
+  }
+}

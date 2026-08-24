@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GPS Path</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0f15'/%3E%3Cpath d='M8 24 C8 16 13 17 16 13 S24 10 24 7' fill='none' stroke='%233fb6dc' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='24' r='3' fill='%23efa22f'/%3E%3Ccircle cx='24' cy='7' r='3' fill='%23f4f6f8'/%3E%3C/svg%3E" />
+<!--STYLE-->
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <header class="brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M7 25 C7 17 12 18 16 13 S25 10 25 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="1 5.2" />
+        <circle cx="7" cy="25" r="3.2" fill="#efa22f" stroke="#0b0f15" stroke-width="1" />
+        <circle cx="25" cy="7" r="3.2" fill="#f4f6f8" stroke="#0b0f15" stroke-width="1" />
+      </svg>
+      <div>
+        <h1>GPS Path</h1>
+        <p class="brand-sub">Written turns, driven on a map</p>
+      </div>
+    </header>
+
+    <details id="input-box">
+      <summary>Route input</summary>
+      <textarea id="input" spellcheck="false" aria-label="Turn instructions"></textarea>
+      <div class="input-row">
+        <button id="build" class="btn btn-primary">Build route</button>
+        <span id="input-hint">turns JSON, or one line per turn</span>
+      </div>
+      <ul id="parse-errors" class="parse-errors" hidden></ul>
+    </details>
+
+    <section id="totals" class="totals" aria-label="Route totals" hidden></section>
+
+    <ol id="steps" class="steps" aria-label="Route steps"></ol>
+  </aside>
+
+  <main id="map-wrap">
+    <div id="map"></div>
+
+    <div id="controls" class="controls">
+      <button id="play" class="btn btn-ctl" aria-label="Play"></button>
+      <select id="speed" aria-label="Simulation speed">
+        <option value="1">×1</option>
+        <option value="10">×10</option>
+        <option value="25">×25</option>
+        <option value="50" selected>×50</option>
+        <option value="100">×100</option>
+        <option value="250">×250</option>
+      </select>
+      <button id="follow" class="btn btn-ctl" aria-label="Follow the vehicle" aria-pressed="true"></button>
+      <button id="restart" class="btn btn-ctl" aria-label="Restart the drive"></button>
+    </div>
+
+    <div id="banner" class="banner" hidden></div>
+
+    <div id="hud" class="hud" hidden>
+      <div class="hud-main">
+        <div id="hud-shields" class="hud-shields" aria-label="Current road"></div>
+        <div class="hud-figure">
+          <span id="hud-mph">0</span>
+          <span class="hud-unit">mph</span>
+        </div>
+        <div class="hud-next">
+          <span id="hud-next-dist"></span>
+          <span id="hud-next-text"></span>
+        </div>
+        <div class="hud-figure">
+          <span id="hud-eta"></span>
+          <span class="hud-unit">time left</span>
+        </div>
+      </div>
+      <div id="progress" class="hud-progress" role="slider" aria-label="Trip position" tabindex="-1">
+        <div class="hud-progress-track"><div id="progress-fill"></div></div>
+      </div>
+      <div class="hud-gps">
+        <span id="gps-dot"></span>
+        <span id="hud-coord"></span>
+        <span id="hud-odo"></span>
+      </div>
+    </div>
+
+    <div id="loading" class="loading" hidden>
+      <div class="loading-box">
+        <span>Building the route</span>
+        <div class="loading-track"><div></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+<!--SCRIPT-->
+</body>
+</html>
