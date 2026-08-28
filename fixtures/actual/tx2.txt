@@ -1,0 +1,26 @@
+Route Description: Origin: IH0030 AR Line
+Destination: Laredo
+Miles Route To Distance Est. Time
+[Loaded Route Origin: IH0030 AR Line ] 0.00 00:00
+165.70 IH30 w Take Exit 56C toward I-635 S 165.70 02:30
+1.20 IH635 Connector s Continue straight on IH635 s [LYNDON B JOHNSON FREEWAY] 166.90 00:02
+8.30 IH635 s Merge onto IH20 w [LYNDON B JOHNSON FREEWAY] 175.20 00:08
+11.70 IH20 w Take Exit 467B toward I-35E S/US-77 S/WACO 187.00 00:11
+1.00 IH35E ConnectorMerge onto IH35E s [US77], [SOUTH R L THORNTON FREEWAY] 187.90 00:00
+sw
+47.60 IH35E s Continue straight on IH35 s 235.50 00:43
+206.80 IH35 sw Keep Right - Take Exit 163 toward IH410 South 442.30 03:07
+22.70 IH410 sw Take Exit 53 toward I-35/LAREDO/SAN ANTONIO 465.10 00:21
+0.40 IH410 Ramp w Take IH35 Ramp sw 465.50 00:00
+0.60 IH35 Ramp sw Continue straight on IH35 sw [SOUTH PAN-AMERICAN EXPRESSWAY] 466.00 00:00
+136.10 IH35 sw Take Exit 8 toward IH69W/US59/World Trade Bridge 602.10 02:03
+1.30 IH69W ConnectorContinue straight on IH69W w [US59], [SL20], [BOB BULLOCK LOOP], [LOOP603.40 00:02
+sw20]
+0.20 IH69W w Take exit toward FM1472/Mines Rd 603.70 00:00
+0.30 IH69W Ramp w Continue straight on IH69WWFR w [US59WFR], [SL20WFR], [BOB BULLOCK604.00 00:00
+LOOPWFR]
+0.20 IH69WWFR w Take FM1472 Ramp nw 604.20 00:00
+< 0.1 FM1472 Ramp nw Merge onto FM1472 nw [MINES ROAD] 604.20 00:00
+8.20 FM1472 nw Arrive at destination. 612.40 00:10
+[Loaded Route Destination: Laredo ] 0.00 00:00
+Final Destination: Laredo 00:00

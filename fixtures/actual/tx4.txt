@@ -1,0 +1,26 @@
+Route Description: Origin: IH0035W, 0.8mi N of IH0035W & SH0183
+Destination: IH0020 LA Line
+Miles Route To Distance Est. Time
+[Loaded Route Origin: IH0035W, 0.8mi N of IH0035W & SH0183 ] 0.00 00:00
+0.90 IH35WWFR sw Turn left onto SH183 e [NORTHEAST 28TH STREET] 0.90 00:00
+< 0.1 SH183 e Turn left onto IH35WEFR n [NORTH FREEWAY FRONTAGE ROADEFR] 1.00 00:00
+0.50 IH35WEFR n Take IH35W Ramp ne 1.50 00:00
+0.30 IH35W Ramp ne Continue straight on IH35W n [US287], [NORTH FREEWAY] 1.80 00:00
+1.60 IH35W n Take Exit 57A toward IH820 3.40 00:02
+0.50 IH820 Connector n Keep right toward IH820 East 3.90 00:00
+0.70 IH820 Connector e Merge onto IH820 e [NORTHEAST LOOP] 4.60 00:00
+10.00 IH820 se Take Exit 28A toward IH30 East/Dallas 14.70 00:10
+1.20 IH30 Connector se Merge onto IH30 e [TOM LANDRY FREEWAY] 15.90 00:02
+4.30 IH30 e DETOUR: Exit 26 toward FIELDER RD; Take Next Entrance after NORTH19.80 00:04
+FIELDER ROAD
+3.80 IH30 e Take Exit 30 toward TX-360/SIX FLAGS DR 24.10 00:04
+0.30 IH30 Ramp se Continue straight on SIX FLAGS DRIVE w 24.30 00:00
+0.30 SIX FLAGS DRIVETurn left onto SH360WFR s [NORTH WATSON ROADWFR] 24.60 00:00
+w
+0.10 SH360WFR s Take SH360 Ramp s 24.70 00:00
+0.30 SH360 Ramp s Continue straight on SH360 s [ANGUS G WYNNE JR FREEWAY] 25.10 00:00
+4.60 SH360 s Take ramp toward IH20 East/Dallas 29.70 00:05
+1.10 IH20 Connector se Continue straight on IH20 e [RONALD REAGAN MEMORIAL HIGHWAY] 30.80 00:02
+181.20 IH20 e Arrive at destination. 212.00 02:44
+[Loaded Route Destination: IH0020 LA Line ] 0.00 00:00
+Final Destination: IH0020 LA Line 00:00

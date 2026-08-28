@@ -1,0 +1,10 @@
+node_modules/
+.cache/
+dist/
+*.zip
+*.tar.gz
+*.tsbuildinfo
+*.cpuprofile
+.DS_Store
+.cache-old/
+fixtures/out/

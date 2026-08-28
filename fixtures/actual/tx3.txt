@@ -1,0 +1,21 @@
+Route Description: Origin: US0285 NM Line
+Destination: Pecos
+Miles Route To Distance Est. Time
+[Loaded Route Origin: US0285 NM Line ] 0.00 00:00
+50.90 US285 se Turn left onto FM1216 n [FARM TO MARKET ROAD 1216] 50.90 00:52
+3.30 FM1216 n Turn right onto FM3398 ne [FARM TO MARKET ROAD 3398] 54.20 00:05
+1.70 FM3398 ne Turn right onto FM873 se [FARM TO MARKET ROAD 873] 55.90 00:03
+5.70 FM873 se Turn left onto FM516 nw 61.60 00:08
+1.70 FM516 nw Turn right onto FM2355 ne [CR2355], [RANCH TO MARKET ROAD 2355] 63.30 00:03
+21.20 FM2355 e Turn right onto SS247 s [PYOTE STREET] 84.50 00:30
+0.30 SS247 s Turn left onto SS57 e [AVENUE A] 84.80 00:00
+0.30 SS57 e Turn right onto FM1927 s [RODGERS STREET] 85.10 00:00
+< 0.1 FM1927 s Take IH20 Ramp w 85.10 00:00
+0.40 IH20 Ramp w Continue straight on IH20 w 85.60 00:00
+12.70 IH20 w Take Exit 52 toward I-20 BUS LOOP W/BARSTOW 98.30 00:12
+0.20 IH20 Ramp w Merge onto IH20NFR w 98.50 00:00
+0.20 IH20NFR w Continue straight on BI20B w 98.70 00:00
+12.90 BI20B w Turn right onto FM2119 nw [FARM TO MARKET ROAD 2119] 111.60 00:14
+18.00 FM2119 nw Arrive at destination. 129.60 00:25
+[Loaded Route Destination: Pecos ] 0.00 00:00
+Final Destination: Pecos 00:00

@@ -1,0 +1,30 @@
+Route Description: Origin: IH0040 OK Line
+Destination: US0380 NM Line
+Miles Route To Distance Est. Time
+[Loaded Route Origin: IH0040 OK Line ] 0.00 00:00
+88.40 IH40 w Take Exit 87 toward FM-2373 88.40 01:20
+0.30 IH40 Ramp nw Turn left onto IH40NFR w 88.70 00:00
+2.50 IH40NFR w Continue straight on FM2575 w 91.20 00:03
+4.00 FM2575 w Turn left onto FM1912 s [SOUTH MASTERSON ROAD] 95.20 00:06
+1.00 FM1912 s Take IH40 Ramp w 96.20 00:02
+0.30 IH40 Ramp w Merge onto IH40 w 96.50 00:00
+10.00 IH40 w Take Exit 70 toward IH27/US60/US87/US287 106.60 00:09
+< 0.1 IH27 Ramp nw Keep left toward IH27 South/US87 South/US60 West/Canyon/Lubbock 106.60 00:00
+0.60 IH27 Ramp sw Merge onto IH27 sw [US60], [US87] 107.20 00:00
+117.50 IH27 s Take Exit 6B toward TX-289 LOOP 224.70 01:47
+0.20 IH27 Ramp sw Merge onto IH27WFR sw [NORTH I-27WFR] 224.90 00:00
+0.40 IH27WFR sw Take SL289 Ramp w 225.30 00:00
+< 0.1 SL289 Ramp w Merge onto SL289NFR nw [NORTH LOOP 289 FRONTAGE ROADNFR] 225.30 00:00
+< 0.1 SL289NFR nw Take SL289 Ramp nw 225.40 00:00
+0.10 SL289 Ramp nw Continue straight on SL289 w [NORTH LOOP 289] 225.50 00:00
+8.20 SL289 sw Take exit toward US62/US82 233.70 00:09
+0.20 SL289 Ramp s Continue straight on SL289WFR s [WEST LOOP 289 FRONTAGE233.90 00:00
+ROADWFR]
+0.10 SL289WFR s Turn right onto US62NFR sw [MARSHA SHARP FREEWAY FRONTAGENFR] 234.00 00:00
+0.50 US62NFR sw Take US62 Ramp sw 234.60 00:00
+0.10 US62 Ramp sw Continue straight on US62 sw [US82], [MARSHA SHARP FREEWAY] 234.70 00:00
+33.10 US62 sw Turn right onto US82 w [US380], [WEST MAIN STREET] 267.90 00:34
+32.30 US82 w Continue straight on US380 nw [ROSWELL HIGHWAY] 300.20 00:33
+14.60 US380 nw Arrive at destination. 314.80 00:15
+[Loaded Route Destination: US0380 NM Line ] 0.00 00:00
+Final Destination: US0380 NM Line 00:00

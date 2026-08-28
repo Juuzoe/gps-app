@@ -1,0 +1,14 @@
+{
+  "turns": [
+    "Border Start: Indiana - I-70",
+    "I-70 (58.3 mi)", // miles can be wrong
+    "I-57 (5.1 mi)",
+    "I-70 W toward St Louis (78.3 mi)",
+    "I-55 (2.1 mi)",
+    "I-55/I-70 (6.1 mi)",
+    "I-255 Exit 10 toward I-270 (15.2 mi)",
+    "I-255/US-50 (3.5 mi)",
+    "I-255 S / US-50 W (3.0 mi)",
+    "Border End: Missouri - I-255"
+  ]
+}
