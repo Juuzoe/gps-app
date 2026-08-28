@@ -16,13 +16,17 @@ import sampleTx5 from '../../fixtures/actual/tx5.txt?raw'
 import sampleTx5Turns from '../../fixtures/actual/tx5-turns.json?raw'
 import sampleIl from '../../fixtures/own/il-sample.json?raw'
 
-const ALL_SAMPLES: { label: string; text: string; state: string }[] = [
-  { label: 'TX permit — Victoria → NM line (582 mi)', text: sampleTx1, state: 'TX' },
-  { label: 'TX permit — US-285 → Pecos, FM roads (130 mi)', text: sampleTx3, state: 'TX' },
-  { label: 'TX permit — I-40 OK line → US-380 NM line (315 mi)', text: sampleTx5, state: 'TX' },
-  { label: 'Turns JSON — same route as the I-40 permit', text: sampleTx5Turns, state: 'TX' },
-  { label: 'Turns JSON — Illinois I-70 (offer example)', text: sampleIl, state: 'IL' },
-]
+// Dev-only: the shipped build carries no routes at all — the DEV branch is
+// compiled out, so the permit texts never enter the production bundle.
+const ALL_SAMPLES: { label: string; text: string; state: string }[] = import.meta.env.DEV
+  ? [
+      { label: 'TX permit — Victoria → NM line (582 mi)', text: sampleTx1, state: 'TX' },
+      { label: 'TX permit — US-285 → Pecos, FM roads (130 mi)', text: sampleTx3, state: 'TX' },
+      { label: 'TX permit — I-40 OK line → US-380 NM line (315 mi)', text: sampleTx5, state: 'TX' },
+      { label: 'Turns JSON — same route as the I-40 permit', text: sampleTx5Turns, state: 'TX' },
+      { label: 'Turns JSON — Illinois I-70 (offer example)', text: sampleIl, state: 'IL' },
+    ]
+  : []
 const SAMPLES = ALL_SAMPLES.filter((s) => !LOCKED_STATE || s.state === LOCKED_STATE)
 
 type Phase = 'idle' | 'building' | 'ready' | 'failed'
@@ -417,6 +421,7 @@ export default function App() {
                 </select>
                 )}
               </div>
+              {SAMPLES.length > 0 && (
               <div className="row" style={{ marginTop: 8 }}>
                 <select
                   className="sel" style={{ width: '100%' }} value=""
@@ -432,6 +437,7 @@ export default function App() {
                   ))}
                 </select>
               </div>
+              )}
               {preview && (
                 <div className="chips" style={{ marginTop: 10 }}>
                   <span className="chip on">{preview.format === 'permit-text' ? 'permit table' : preview.format === 'turns-json' ? 'turns JSON' : 'plain lines'}</span>
