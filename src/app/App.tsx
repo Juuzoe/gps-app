@@ -461,8 +461,9 @@ export default function App() {
                     {mirrors.live === 0
                       ? 'None of the public OpenStreetMap servers are answering right now.'
                       : `Only ${mirrors.live} of ${mirrors.total} public OpenStreetMap servers ${mirrors.live === 1 ? 'is' : 'are'} reachable right now.`}{' '}
-                    This is the shared free infrastructure, not this machine — everyone sees it. The
-                    build continues on what is left, and everything fetched is cached.
+                    These servers are shared worldwide, so the wait happens on their side and affects
+                    every user of them. The build keeps going on whichever servers still answer, and
+                    everything fetched is cached for the next attempt.
                   </div>
                 )}
                 {elapsed > 25 && mirrors.live === mirrors.total && (
