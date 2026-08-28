@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { buildRoute } from '../engine/engine'
 import { abortAll, mirrorHealth } from '../engine/overpass'
+import { LOCKED_STATE } from './config'
 import { parseInput } from '../engine/parse'
 import { routeChain } from '../engine/osrm'
 import { MI } from '../engine/geo'
@@ -15,13 +16,14 @@ import sampleTx5 from '../../fixtures/actual/tx5.txt?raw'
 import sampleTx5Turns from '../../fixtures/actual/tx5-turns.json?raw'
 import sampleIl from '../../fixtures/own/il-sample.json?raw'
 
-const SAMPLES: { label: string; text: string }[] = [
-  { label: 'TX permit — Victoria → NM line (582 mi)', text: sampleTx1 },
-  { label: 'TX permit — US-285 → Pecos, FM roads (130 mi)', text: sampleTx3 },
-  { label: 'TX permit — I-40 OK line → US-380 NM line (315 mi)', text: sampleTx5 },
-  { label: 'Turns JSON — same route as the I-40 permit', text: sampleTx5Turns },
-  { label: 'Turns JSON — Illinois I-70 (offer example)', text: sampleIl },
+const ALL_SAMPLES: { label: string; text: string; state: string }[] = [
+  { label: 'TX permit — Victoria → NM line (582 mi)', text: sampleTx1, state: 'TX' },
+  { label: 'TX permit — US-285 → Pecos, FM roads (130 mi)', text: sampleTx3, state: 'TX' },
+  { label: 'TX permit — I-40 OK line → US-380 NM line (315 mi)', text: sampleTx5, state: 'TX' },
+  { label: 'Turns JSON — same route as the I-40 permit', text: sampleTx5Turns, state: 'TX' },
+  { label: 'Turns JSON — Illinois I-70 (offer example)', text: sampleIl, state: 'IL' },
 ]
+const SAMPLES = ALL_SAMPLES.filter((s) => !LOCKED_STATE || s.state === LOCKED_STATE)
 
 type Phase = 'idle' | 'building' | 'ready' | 'failed'
 type DriveMode = 'off' | 'sim' | 'gps'
@@ -30,7 +32,7 @@ export default function App() {
   const mapRef = useRef<MapView>()
   const mapDiv = useRef<HTMLDivElement>(null)
   const [input, setInput] = useState('')
-  const [stateSel, setStateSel] = useState('auto')
+  const [stateSel, setStateSel] = useState(LOCKED_STATE ?? 'auto')
   const [phase, setPhase] = useState<Phase>('idle')
   const [progress, setProgress] = useState<ProgressEvent>()
   const [result, setResult] = useState<RouteResult>()
@@ -404,12 +406,16 @@ export default function App() {
                 </button>
                 <input ref={fileRef} type="file" accept=".json,.txt" hidden onChange={(e) => onFile(e.target.files?.[0] ?? undefined)} />
                 <span className="spacer" style={{ flex: 1 }} />
+                {LOCKED_STATE ? (
+                  <span className="statebadge">{placeName(LOCKED_STATE).toUpperCase()} ONLY</span>
+                ) : (
                 <select className="sel" value={stateSel} onChange={(e) => setStateSel(e.target.value)} aria-label="State">
                   <option value="auto">State: auto</option>
                   {STATES.map((s) => (
                     <option key={s.code} value={s.code}>{s.code}</option>
                   ))}
                 </select>
+                )}
               </div>
               <div className="row" style={{ marginTop: 8 }}>
                 <select
