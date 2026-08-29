@@ -1,6 +1,8 @@
-# Roadbook
+# Route navigator
 
 Turns written route instructions into drivable navigation routes on a map, with live GPS and a first-person drive view. Built for oversize/overweight permit routes: give it the coarse turns list from a dispatch sheet or the full route table from a TxDMV single-trip permit, and it produces the route line, checks it against the instructions, and navigates it.
+
+This build is scoped to **Texas**. The engine itself is state-generic — every state is implemented and tested — and the scope is one constant, `LOCKED_STATE` in `src/app/config.ts`. Set it to another state code to lock there instead, or to `undefined` to enable all 48 states with a state picker in the UI. Locking also skips the state-inference lookups on every build.
 
 ## What it accepts
 
@@ -52,19 +54,22 @@ npm run test:routes            # run the fixture suite (network required)
 npm run test:routes -- tx1     # just fixtures matching "tx1"
 ```
 
-`fixtures/` holds the test inputs: `own/` are synthetic routes (including deliberate error cases), `actual/` are real TxDMV permit routes. The harness caches Overpass/OSRM responses in `.cache/`.
+`fixtures/` holds the test inputs: `own/` are synthetic routes (including deliberate error cases) covering 20 states, `actual/` are real TxDMV permit routes. The harness caches Overpass/OSRM responses in `.cache/`.
+
+The sample routes in the UI's picker are development-only: they sit behind `import.meta.env.DEV`, so `npm run build` leaves them out of the shipped bundle entirely and the picker hides itself.
 
 ## Speed
 
 Building a route is dominated by round trips to public Overpass mirrors (15-60s each, whatever you ask for), so the engine is built to need almost none of them:
 
-- **Junctions are found server-side, not client-side.** The expensive way to find where road A meets road B is to download both roads' geometry — megabytes, a round trip per road — and intersect locally. Instead, Overpass is asked for the meeting places themselves: `node(w.a)(w.b)` returns shared nodes, `way.b(around.a:900)` returns B's ways near A as centre points. Every transition of a route, plus its border endpoints, goes into one query (sentinel-delimited, road sets declared once and reused), chunked only when a route touches more than ~7 distinct roads, chunks running concurrently one lane per mirror. Measured: four junctions plus an endpoint sweep in a single 129KB query. Geometry is then fetched only in ~2km discs around the chosen points, for carriageway snapping — a second, small, batched request.
-- **A cold build is therefore a few round trips regardless of route length or shape.** There are no corridor heuristics to mis-place: nothing is tuned to how any particular route bends.
+- **Junctions are found server-side, not client-side.** The expensive way to find where road A meets road B is to download both roads' geometry — megabytes, a round trip per road — and intersect locally. Instead, Overpass is asked for the meeting places themselves: `node(w.a)(w.b)` returns shared nodes, `way.b(around.a:900)` returns B's ways near A as centre points. Transitions are batched into few queries (sentinel-delimited, road sets declared once and reused) that run concurrently. Measured: four junctions plus an endpoint sweep in a single 129KB query. Geometry is then fetched only in ~2km discs around the chosen points, for carriageway snapping — a second, small, batched request.
+- **Each search is bounded by the route's own claimed mileage.** Endpoints resolve first; the junction after leg *k* can then be no farther from the origin than the miles claimed for legs 0..*k*, and no farther from the destination than the rest. Scan cost tracks the area covered, and bounding it cut a statewide Texas scan from 43.3s to 24.2s on the same three roads. The bound comes only from the route's own numbers, so nothing is tuned to how a particular route bends; where the numbers are missing or contradictory, the search widens to the state and says so rather than guessing.
+- **Dead mirrors are detected, not waited on.** Public mirrors go down for hours (measured: six of seven unreachable worldwide on 2026-08-27). A cheap probe marks failing hosts before real queries go out, so a dead mirror costs about a second instead of a 30-150s connect timeout on every parallel lane; requests are capped at two per mirror, the documented courtesy quota.
 - **Never resolve an administrative area.** `area["ISO3166-2"=…]` is the most expensive thing a query can do and what makes mirrors 504. Everything uses a bbox or an `around` disc (spatial index), clipped afterwards to the real state outline, since a bounding box reaches deep into neighbouring states.
 - **Failures are failures, not facts.** Overpass reports its own timeouts as HTTP 200 with a `remark`; that is detected and retried on another mirror with backoff, and empty responses are never cached. Anything discovery misses falls back per-pair to geometry intersection, then degrades to a flagged bridge — a slow lookup can cost accuracy flags, never a silent wrong answer.
 - **The UI hides the rest.** Fetching starts as soon as pasted input parses (Build adopts the running work), everything is cached (IndexedDB / `.cache`), rebuilds take seconds, and Cancel always works.
 
-**Self-hosting Overpass removes the round-trip cost entirely**, and is the recommended production setup.
+**Self-hosting Overpass removes the queue wait entirely**, and is the recommended production setup. On the free public servers, a single trivial query queued 5-14s on a bad day, which sets a floor no client-side change can go under. A private Overpass answers the same query in well under a second. A Texas-only extract needs roughly 20GB of disk and 4-8GB of RAM (a €6-15/month VPS, ~1-2h import); the full US extract wants ~150-200GB and 16-32GB. Point the mirror list in `src/engine/overpass.ts` at the private instance and keep the public ones as fallback — no other change is needed, and states the private server does not hold still work through the public path.
 
 ## Data services
 
