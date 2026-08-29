@@ -46,7 +46,7 @@ export async function osrmRoute(points: RoutePoint[], useBearings = true): Promi
   for (const base of MIRRORS) {
     try {
       const res = await fetch(`${base}/route/v1/driving/${coords}?${params}`, {
-        headers: { 'User-Agent': 'roadbook/0.1 (permit route navigator)' },
+        headers: { 'User-Agent': 'route-navigator/1.0 (oversize permit routing)' },
         signal: AbortSignal.timeout(60_000),
       })
       const json: any = await res.json()

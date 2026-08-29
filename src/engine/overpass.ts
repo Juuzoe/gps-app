@@ -54,7 +54,7 @@ const MIRRORS = IN_BROWSER
       'https://z.overpass-api.de/api/interpreter',
     ]
 
-const UA = 'roadbook/0.1 (permit route navigator)'
+const UA = 'route-navigator/1.0 (oversize permit routing)'
 // Ref-carrying roads never sit below `unclassified`; named local streets are
 // fetched separately by fetchStreetWays, which does not filter on class.
 const HIGHWAY = '^(motorway|trunk|primary|secondary|tertiary|unclassified)$'

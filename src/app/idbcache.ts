@@ -9,7 +9,7 @@ export class IdbCache implements Cache {
   constructor() {
     this.ready = new Promise((resolve) => {
       try {
-        const req = indexedDB.open('roadbook-cache', 1)
+        const req = indexedDB.open('route-navigator-cache', 1)
         req.onupgradeneeded = () => req.result.createObjectStore('kv')
         req.onsuccess = () => {
           this.db = req.result

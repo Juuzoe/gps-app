@@ -30,7 +30,7 @@ export async function loadStatePolygon(code: string): Promise<void> {
     'https://nominatim.openstreetmap.org/search?format=json&limit=1&country=us&polygon_geojson=1' +
     '&polygon_threshold=0.01&state=' + encodeURIComponent(name)
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': 'roadbook/0.1 (permit route navigator)' } })
+    const res = await fetch(url, { headers: { 'User-Agent': 'route-navigator/1.0 (oversize permit routing)' } })
     const json: any[] = await res.json()
     const g = json[0]?.geojson
     if (!g) {
