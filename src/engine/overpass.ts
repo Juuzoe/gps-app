@@ -41,17 +41,21 @@ export class MemoryCache implements Cache {
 // Browsers need CORS, which the overpass-api.de family and the VK mirror
 // serve; node can also use mirrors that omit CORS headers.
 const IN_BROWSER = typeof document !== 'undefined'
+// The canonical instances lead; the VK mirror is a fallback only, because
+// corporate and school networks in the US commonly block .ru hosts outright —
+// a client saw every fetch die with Safari's "Load failed" for exactly that
+// reason. The breaker and probes still route around whichever host is down.
 const MIRRORS = IN_BROWSER
   ? [
-      'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
       'https://overpass-api.de/api/interpreter',
       'https://z.overpass-api.de/api/interpreter',
+      'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
     ]
   : [
-      'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
       'https://overpass-api.de/api/interpreter',
-      'https://overpass.kumi.systems/api/interpreter',
       'https://z.overpass-api.de/api/interpreter',
+      'https://overpass.kumi.systems/api/interpreter',
+      'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
     ]
 
 const UA = 'route-navigator/1.0 (oversize permit routing)'

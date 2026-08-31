@@ -174,7 +174,60 @@ function normalizeRoadText(s: string): string {
     .replace(/STATE\s+SPUR\s+(\d+)/gi, 'SS$1')
 }
 
-export function parsePermitText(lines: string[]): ParsedRoute {
+/**
+ * Rebuild table rows from a cell-split paste.
+ *
+ * Some PDF viewers (macOS Preview and Safari among them) copy the route table
+ * cell by cell, so one row arrives as several lines: "3.30" / "SL463 nw" /
+ * "Continue straight on US77 w" / "5.90" / "00:04". The row-stitcher below
+ * expects rows to START with their mileage, so this shape used to collapse the
+ * whole table into one giant row — a client pasted exactly that and got a
+ * route of verb fragments. Every TxDMV row ENDS with a time cell, which makes
+ * reassembly mechanical: a mileage cell opens a row, a time cell closes it.
+ */
+function reassembleCellRows(lines: string[]): string[] {
+  const TIME = /^\d{1,2}:\d{2}$/
+  const ENDS_TIME = /\s\d{1,2}:\d{2}$/
+  const MILES = /^(\d+\.\d{1,2}|<\s*0\.1)$/
+  const OPENS = /^(\d+\.\d{1,2}|<\s*0\.1)\s+\S/
+  const HEADER = /^(Miles|Route\s*To|Route|To|Distance|Est\.?\s*Time|Time)$/i
+  const bareTimes = lines.filter((l) => TIME.test(l.trim())).length
+  if (bareTimes < 3) return lines
+  const out: string[] = []
+  let buf: string[] | null = null
+  const close = () => {
+    if (buf) out.push(buf.join(' '))
+    buf = null
+  }
+  for (const raw of lines) {
+    const line = raw.trim()
+    if (!line || HEADER.test(line)) continue
+    if (MILES.test(line)) {
+      // A bare mileage cell opens a row — unless one is already open, where
+      // it is the cumulative-miles column and belongs to the current row.
+      if (buf) buf.push(line)
+      else buf = [line]
+    } else if (OPENS.test(line)) {
+      close()
+      buf = [line]
+      if (ENDS_TIME.test(line)) close()
+    } else if (buf) {
+      buf.push(line)
+      if (TIME.test(line) || ENDS_TIME.test(line)) close()
+    } else if (/\]$/.test(line) && out.length && /\[[^\]]*$/.test(out[out.length - 1])) {
+      // Orphaned tail of a wrapped [BRACKET TAG] that landed after the time
+      // cell closed its row.
+      out[out.length - 1] += ' ' + line
+    } else {
+      out.push(line)
+    }
+  }
+  close()
+  return out
+}
+
+export function parsePermitText(rawLines: string[]): ParsedRoute {
+  const lines = reassembleCellRows(rawLines)
   const problems: string[] = []
   let origin: EndpointSpec = { type: 'unknown', raw: '' }
   let destination: EndpointSpec = { type: 'unknown', raw: '' }

@@ -1,0 +1,256 @@
+Scan for Permit Info PAGE 1 of 3
+Texas Oversize/Overweight Single-Trip Permit
+Name: SAMPLE CARRIER LLC
+Permit Number: 000000000000
+Address: 100 SAMPLE ST
+Issued On: 07/15/2026 Time: 09:03 AM
+SAMPLE CITY, TX 00000
+Last Amended
+Account: 000000000
+Phone:
+000-000-0000
+Effective: 07/15/2026
+Applicant: Sample Applicant
+Expiration: 07/19/2026
+Load Description: Wheel Loader VOLVO L110H
+Gross Weight: 88000
+Max. Width: 10'
+Max Height: 13' 6''
+Max. Length: 72'
+ROH:
+LEGAL
+FOH:
+LEGAL
+Underclearance: N/A
+Axle:
+1
+2
+3
+4
+5
+Distances:
+17'
+4'
+43'
+5'
+Weights: 12800 19000 19000 18600 18600
+# of Tires: 2
+4
+4
+4
+4
+Tire Sizes: 11"
+11"
+11"
+11"
+11"
+Truck:
+Trailer:
+2022 FREIGHTLINER
+2024 XL
+3AKJHHDR6NSNG4786
+4U3J05324RL023264
+P1282274
+IL 5313698
+ME
+Authority Type:
+USDOT Number: 4276072
+Route Description:
+Origin: IH0040 OK Line
+Destination: US0380 NM Line
+General Conditions:
+1 It is expressly understood that the Texas Department of Motor Vehicles (TxDMV) shall not be responsible in any way for any
+damage of whatever nature that may result from the movement of the described vehicle and load over Texas highways, and
+that all such responsibility and liability is hereby accepted on behalf of the permittee.
+2 This permit is issued on the condition that the permittee complies with all laws and rules regarding the movement of
+oversize/overweight vehicles, equipment, and loads on Texas roads. Violations of these laws may result in a citation.
+3 It is the responsibility of the permittee to clear any overhead obstructions or utility lines. In addition, all utility companies or
+other entities must be contacted in advance, as required by the utility or entity, to assist in clearing the obstruction. For a list
+of utility companies and their contact information, visit the Public Utility Commission of Texas website:
+http://www.puc.texas.gov/industry/electric/directories/
+Payment Method:
+Credit Card
+Permit Fee:
+$75.00
+Trace #: 000
+$135.00
+Overweight Fee:
+Wire Co. Name: Sample Co
+Other Fees:
+$0.00
+$4.98
+Permit Destination:
+Texas.gov Fee*:
+Total Amt Paid:
+$214.98
+Amendments:
+*Payment includes Texas.gov cost recovery fees for the state of Texas.
+State law requires permit to be carried in vehicle until one day after expiration.
+For more information, call the Texas 'One Stop Shop' toll free number at 1-800-299-1700 or
+visit our website at www.txdmv.gov.
+PAGE 2 of 3
+Texas Oversize/Overweight Single-Trip Permit
+General Conditions(Continued):
+4 Travel is prohibited on a load-restricted bridge when exceeding the posted capacity.
+5 Permittee must adhere to the described route. Please contact TxDMV for an amended route if you believe you cannot safely
+navigate any of the roadways listed on the permit.
+6 Driving directions listed on the permit for non-state maintained roads are for information purposes only and do not constitute
+authorization to travel on such roads.
+7 This permit does not authorize travel on non-state maintained roadways (i.e., city streets and county roads). It is the
+permittee's responsibility to obtain any required approvals and permits from local jurisdictions on the roads that they maintain.
+If your route involves travel on non-state maintained roadways, and you are unable to obtain any required approvals or
+permits from a local jurisdiction, please contact TxDMV for an amended route.
+8 Travel is not authorized on toll roads unless the permit route explicitly includes a toll road or the permit holder obtains written
+permission from the toll authority (visit www.txdot.gov/discover/toll-roads-managed-lanes/txdot-toll-roads.html for toll road
+locations and contact information to request written permission).
+9 Permit valid only for commodities that cannot be reasonably dismantled or for hauling more than one item that does not
+cause or create an over legal dimension or weight in excess of legal limits.
+10 Permit may not be used for a container, including a trailer or an intermodal container, loaded with divisible cargo.
+11 Daytime movement only unless otherwise specified under Route Conditions or General Conditions.
+12 Overweight only may travel at nighttime with no escorts.
+13 Loads not exceeding 10 feet wide, 14 feet high, 100 feet in length, with legal front and rear overhang, may travel at nighttime
+on the Interstate Highway System with no escorts required.
+14 This permit does not authorize the vehicle to exceed the manufacturer's tire load rating listed in FMCSR 393.75(g).
+15 Any axle grouping of 6 or more must be steerable or articulating.
+16 Ground clearance is measured at the center of the trailer.
+17 When Gross Weight is stated as "Legal," it is implied that the axle and axle group weights are also legal.
+18 Permitted vehicle(s) must be registered under Texas Transportation Code, Chapter 502.
+19 Permitted vehicle and load must be properly equipped (i.e., signs, flags, and lights) as required by Texas Transportation
+Code and as required in the Route Conditions of this permit (if applicable).
+20 Permit is valid for single trip only.
+21 A permitted vehicle may deviate from a permitted route between the highways authorized on the permit and a terminal or
+facility for food, fuel, repair or rest having an entrance within one mile of the nearest ramp or intersection provided the vehicle
+will not cross under or over any structure. When re-entering the permitted route, the vehicle should abide by the same
+restrictions as when exiting.
+22 Permit is not valid without movement conditions and routing information (if applicable) sheet(s) attached.
+23 Trees: Prior approval from TxDOT is required for trimming/removal of any trees in the right-of-way of state-maintained
+roadways. Carrier is required to coordinate trimming/removal in advance with the local TxDOT district office. For trees on
+county roads or city streets, carrier must contact the appropriate local jurisdiction.
+PAGE 3 of 3
+Texas Oversize/Overweight Single-Trip Permit
+General Conditions(Continued):
+24 Use caution at all railroad crossings. In case of emergency, please contact the appropriate railroad. Amtrak 800-331-0008;
+BNSF Railway 800-832-5452; CSX 800-232-0144; Canadian National 800-465-9239; Canadian Pacific 800-716-9132;
+Kansas City Southern 800-892-6295; Norfolk Southern 800-453-2530; Union Pacific 888-877-7267.
+Origin: IH0040 OK Line
+Miles
+Route
+To
+Distance
+Est. Time
+[Loaded Route Origin: IH0040 OK Line ]
+0.00
+00:00
+88.40
+IH40 w
+Take Exit 87 toward FM-2373
+88.40
+01:20
+0.30
+IH40 Ramp nw Turn left onto IH40NFR w
+88.70
+00:00
+2.50
+IH40NFR w
+Continue straight on FM2575 w
+91.20
+00:03
+4.00
+FM2575 w
+Turn left onto FM1912 s [SOUTH MASTERSON ROAD]
+95.20
+00:06
+1.00
+FM1912 s
+Take IH40 Ramp w
+96.20
+00:02
+0.30
+IH40 Ramp w
+Merge onto IH40 w
+96.50
+00:00
+10.00
+IH40 w
+Take Exit 70 toward IH27/US60/US87/US287
+106.60
+00:09
+< 0.1
+IH27 Ramp nw Keep left toward IH27 South/US87 South/US60 West/Canyon/Lubbock 106.60
+00:00
+0.60
+IH27 Ramp sw Merge onto IH27 sw [US60], [US87]
+107.20
+00:00
+117.50
+IH27 s
+Take Exit 6B toward TX-289 LOOP
+224.70
+01:47
+0.20
+IH27 Ramp sw Merge onto IH27WFR sw [NORTH I-27WFR]
+224.90
+00:00
+0.40
+IH27WFR sw
+Take SL289 Ramp w
+225.30
+00:00
+< 0.1
+SL289 Ramp w Merge onto SL289NFR nw [NORTH LOOP 289 FRONTAGE ROADNFR]
+225.30
+00:00
+< 0.1
+SL289NFR nw
+Take SL289 Ramp nw
+225.40
+00:00
+0.10
+SL289 Ramp nw Continue straight on SL289 w [NORTH LOOP 289]
+225.50
+00:00
+8.20
+SL289 sw
+Take exit toward US62/US82
+233.70
+00:09
+0.20
+SL289 Ramp s Continue straight on SL289WFR s [WEST LOOP 289 FRONTAGE
+233.90
+00:00
+ROADWFR]
+0.10
+SL289WFR s
+Turn right onto US62NFR sw [MARSHA SHARP FREEWAY FRONTAGENFR] 234.00
+00:00
+0.50
+US62NFR sw
+Take US62 Ramp sw
+234.60
+00:00
+0.10
+US62 Ramp sw Continue straight on US62 sw [US82], [MARSHA SHARP FREEWAY] 234.70
+00:00
+33.10
+US62 sw
+Turn right onto US82 w [US380], [WEST MAIN STREET]
+267.90
+00:34
+32.30
+US82 w
+Continue straight on US380 nw [ROSWELL HIGHWAY]
+300.20
+00:33
+14.60
+US380 nw
+Arrive at destination.
+314.80
+00:15
+[Loaded Route Destination: US0380 NM Line ]
+0.00
+00:00
+Final Destination: US0380 NM Line
+00:00
+*Permit loads that are overweight only are exempt from curfew.
+For more information, visit our website at www.txdmv.gov. For questions or complaints concerning the applicant
+process for permits, call 1-800-299-1700 or write to: TxDMV-MCD, 4000 Jackson Avenue, Austin,TX. 78731
