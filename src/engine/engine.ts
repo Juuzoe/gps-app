@@ -61,9 +61,14 @@ export async function buildRoute(input: string, options: BuildOptions = {}): Pro
   const viaFor = (ch: ResolvedWaypoint[]) => async (i: number): Promise<LatLng[]> => {
     const from = Math.max(0, ch[i].legAfter)
     const to = Math.min(parsed.legs.length - 1, ch[i + 1].legBefore)
-    if (from !== to) return []
-    const leg = parsed.legs[from]
-    if (leg.kind !== 'road' || !leg.roads.length || leg.claimedMiles <= 2) return []
+    // An interval that spans several legs (a junction between them was
+    // bridged) still names its roads; the longest-claimed one is the road
+    // the routed path most likely abandoned, so its geometry supplies the
+    // via candidates.
+    const spanned = parsed.legs.slice(from, to + 1).filter((l) => l.kind === 'road' && l.roads.length)
+    if (!spanned.length) return []
+    const leg = spanned.reduce((x, y) => (y.claimedMiles > x.claimedMiles ? y : x))
+    if (leg.claimedMiles <= 2) return []
     const a = ch[i].pos
     const b = ch[i + 1].pos
     const mid = { lat: (a.lat + b.lat) / 2, lng: (a.lng + b.lng) / 2 }
