@@ -8,3 +8,5 @@ dist/
 .DS_Store
 .cache-old/
 fixtures/out/
+scripts/debug-*.ts
+scripts/tmp-*.ts

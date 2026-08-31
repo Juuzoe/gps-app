@@ -1,4 +1,4 @@
-import type { LegReport, ProgressFn, RouteResult } from './types'
+import type { LatLng, LegReport, ProgressFn, RouteResult } from './types'
 import { MI, cumulativeMeters } from './geo'
 import { parseInput } from './parse'
 import { determineState, refineWaypoints, resolveWaypoints, type ResolvedWaypoint } from './resolve'
@@ -53,10 +53,44 @@ export async function buildRoute(input: string, options: BuildOptions = {}): Pro
     }
     return out
   }
+  // A via candidate pins a leg back onto its instructed road when routing
+  // shortcuts off it (see routeChain). Candidates are the road's own points
+  // farthest from the straight line between the two junctions, one per side —
+  // for a loop road those are the two arcs, and the claimed mileage picks
+  // between them.
+  const viaFor = (ch: ResolvedWaypoint[]) => async (i: number): Promise<LatLng[]> => {
+    const from = Math.max(0, ch[i].legAfter)
+    const to = Math.min(parsed.legs.length - 1, ch[i + 1].legBefore)
+    if (from !== to) return []
+    const leg = parsed.legs[from]
+    if (leg.kind !== 'road' || !leg.roads.length || leg.claimedMiles <= 2) return []
+    const a = ch[i].pos
+    const b = ch[i + 1].pos
+    const mid = { lat: (a.lat + b.lat) / 2, lng: (a.lng + b.lng) / 2 }
+    const radius = Math.max(8_000, leg.claimedMiles * MI * 0.75)
+    await source.ensureMany(leg.roads.map((r) => ({ ref: r, scope: { kind: 'near' as const, center: mid, radiusM: radius } })))
+    const net = source.netFor(leg.roads)
+    // Signed offset from the a→b chord, in metres; the extreme on each side.
+    const kx = Math.cos((mid.lat * Math.PI) / 180) * 111_320
+    const abx = (b.lng - a.lng) * kx
+    const aby = (b.lat - a.lat) * 110_540
+    const len = Math.hypot(abx, aby) || 1
+    let hi: { p: LatLng; d: number } | undefined
+    let lo: { p: LatLng; d: number } | undefined
+    for (const p of net.nodePos.values()) {
+      const d = ((p.lng - a.lng) * kx * aby - (p.lat - a.lat) * 110_540 * abx) / len
+      if (d > (hi?.d ?? 0)) hi = { p, d }
+      if (d < (lo?.d ?? 0)) lo = { p, d }
+    }
+    // A via less than 1.5km off the chord adds nothing the direct route lacks.
+    return [hi, lo].filter((x): x is { p: LatLng; d: number } => !!x && Math.abs(x.d) > 1500).map((x) => x.p)
+  }
+
   let osrm = await routeChain(
     chain.map((w) => ({ pos: w.pos, bearing: w.bearing })),
     (i, msg) => pairProblems.push(`Segment ${i + 1}: ${msg}`),
     targetsFor(chain),
+    viaFor(chain),
   )
 
   // Zero routed distance across every segment means the routing service was
@@ -91,7 +125,7 @@ export async function buildRoute(input: string, options: BuildOptions = {}): Pro
     await refineWaypoints(source, parsed, resolved, progress)
     const chainR = usable()
     try {
-      const osrmR = await routeChain(chainR.map((w) => ({ pos: w.pos, bearing: w.bearing })), undefined, targetsFor(chainR))
+      const osrmR = await routeChain(chainR.map((w) => ({ pos: w.pos, bearing: w.bearing })), undefined, targetsFor(chainR), viaFor(chainR))
       const reportsR = legReports(parsed, chainR, osrmR)
       if (score(reportsR) >= score(reports)) {
         osrm = osrmR
@@ -125,7 +159,7 @@ export async function buildRoute(input: string, options: BuildOptions = {}): Pro
       resolved.waypoints[wpIdx].pos = resolved.waypoints[wpIdx].alternates[0]
       const chain2 = usable()
       try {
-        const osrm2 = await routeChain(chain2.map((w) => ({ pos: w.pos, bearing: undefined })), undefined, targetsFor(chain2))
+        const osrm2 = await routeChain(chain2.map((w) => ({ pos: w.pos, bearing: undefined })), undefined, targetsFor(chain2), viaFor(chain2))
         const reports2 = legReports(parsed, chain2, osrm2)
         if (score(reports2) > score(reports)) {
           osrm = osrm2

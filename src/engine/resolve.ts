@@ -434,13 +434,23 @@ export async function resolveWaypoints(
   }
 
   // Viterbi over each contiguous run of pairs that have candidates.
+  //
+  // Cost is RELATIVE to each leg's claimed mileage. Claims are proportionally
+  // accurate, so 13 miles of straight-line slack on a 565-mile leg is noise
+  // while 13 miles of error on a 16-mile leg is a wrong junction — in
+  // absolute metres the long leg's noise outvoted the short leg's certainty,
+  // and a loop-road bypass collapsed onto one corner of the loop because the
+  // 565-mile approach preferred a crossing eight miles further along.
+  // Dividing by the leg's own claim keeps per-leg candidate order identical
+  // and only changes how legs trade off against each other.
   const edgeCost = (from: LatLng | undefined, to: LatLng, claimedMiles: number, dir?: keyof typeof CARDINAL_BEARING): number => {
     if (!from) return 0
     const d = fastDist(from, to)
-    let err = claimedMiles > 0 ? Math.abs(d * 1.15 - claimedMiles * MI) : d * 0.15
+    const scale = Math.max(claimedMiles, 2) * MI
+    let err = claimedMiles > 0 ? Math.abs(d * 1.15 - claimedMiles * MI) / scale : (d * 0.15) / scale
     if (dir) {
       const diff = bearingDiff(bearing(from, to), CARDINAL_BEARING[dir])
-      if (diff > 110) err += 60_000
+      if (diff > 110) err += 0.5
     }
     return err
   }
@@ -462,7 +472,7 @@ export async function resolveWaypoints(
       const brow: number[] = []
       for (let i = 0; i < e.cands.length; i++) {
         const c = e.cands[i]
-        const bonus = e.exits.some((p) => fastDist(p, c.pos) < 2500) ? -30_000 : 0
+        const bonus = e.exits.some((p) => fastDist(p, c.pos) < 2500) ? -0.25 : 0
         if (k === runStart) {
           row.push(edgeCost(startAnchor, c.pos, leg.claimedMiles, leg.dir) + bonus)
           brow.push(-1)

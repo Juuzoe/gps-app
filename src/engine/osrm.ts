@@ -100,6 +100,7 @@ export async function routeChain(
   points: RoutePoint[],
   onPairProblem?: (index: number, message: string) => void,
   targetsMi?: (number | undefined)[],
+  viaCandidates?: (index: number) => Promise<LatLng[]>,
 ): Promise<OsrmRoute> {
   const MI = 1609.344
   const target = (i: number) => {
@@ -108,11 +109,15 @@ export async function routeChain(
   }
   // A leg has resolved somewhere wrong when it overshoots its own claim by
   // more than the claim's usual slack. Undershoot is not a snap symptom.
+  // Overshoot means a snap resolved somewhere wrong; undershoot means the
+  // path between two RIGHT points took a shortcut off the instructed road —
+  // a loop bypass collapses to the straight road through town, for example.
+  const off = (legMi: number, t: number) => legMi - t > t * 0.6 + 2 || t - legMi > Math.max(2, t * 0.45)
   const suspect = (r: OsrmRoute): number[] => {
     const out: number[] = []
     for (let i = 0; i < r.legs.length; i++) {
       const t = target(i)
-      if (t !== undefined && r.legs[i].distance / MI > t * 1.6 + 2) out.push(i)
+      if (t !== undefined && off(r.legs[i].distance / MI, t)) out.push(i)
     }
     return out
   }
@@ -162,6 +167,31 @@ export async function routeChain(
           } catch (e) {
             firstErr ??= e instanceof Error ? e.message : String(e)
           }
+        }
+        // Still far from the claim with the right endpoints: the path between
+        // them has abandoned the instructed road for a shortcut. A via point
+        // taken from the instructed road's own geometry pins the route back
+        // onto it; the claim stays the judge of whether that helped.
+        if (best && t !== undefined && off(best.distance / MI, t) && viaCandidates) {
+          try {
+            for (const v of await viaCandidates(i)) {
+              try {
+                  const withVia = await osrmRoute([points[i], { pos: v }, points[i + 1]], false)
+                const merged: OsrmRoute = {
+                  geometry: withVia.geometry,
+                  distance: withVia.distance,
+                  duration: withVia.duration,
+                  legs: [{
+                    distance: withVia.legs.reduce((sm, l) => sm + l.distance, 0),
+                    duration: withVia.legs.reduce((sm, l) => sm + l.duration, 0),
+                    steps: withVia.legs.flatMap((l) => l.steps),
+                  }],
+                  snapped: withVia.snapped,
+                }
+                if (Math.abs(merged.distance / MI - t) < Math.abs(best.distance / MI - t)) best = merged
+              } catch { /* this via failed; the next may not */ }
+            }
+          } catch { /* via lookup failed; the flagged direct route stands */ }
         }
         if (!best && firstErr) onPairProblem?.(i, firstErr)
         segs[i] = best
