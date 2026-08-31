@@ -40,15 +40,37 @@ export async function buildRoute(input: string, options: BuildOptions = {}): Pro
 
   progress({ phase: 'route', message: `Routing ${chain.length} waypoints…`, ratio: 0.82 })
   const pairProblems: string[] = []
+  // The instructions' own mileage for each waypoint interval — routeChain uses
+  // it to arbitrate between snap variants (see osrm.ts).
+  const targetsFor = (ch: ResolvedWaypoint[]): (number | undefined)[] => {
+    const out: (number | undefined)[] = []
+    for (let i = 0; i + 1 < ch.length; i++) {
+      const from = Math.max(0, ch[i].legAfter)
+      const to = Math.min(parsed.legs.length - 1, ch[i + 1].legBefore)
+      let sum = 0
+      for (let k = from; k <= to; k++) sum += parsed.legs[k]?.claimedMiles ?? 0
+      out.push(sum > 0 ? sum : undefined)
+    }
+    return out
+  }
   let osrm = await routeChain(
     chain.map((w) => ({ pos: w.pos, bearing: w.bearing })),
     (i, msg) => pairProblems.push(`Segment ${i + 1}: ${msg}`),
+    targetsFor(chain),
   )
 
   progress({ phase: 'validate', message: 'Checking the route against the instructions…', ratio: 0.88 })
   let reports = legReports(parsed, chain, osrm)
+  // Credit miles routed on matching roads only up to the instruction's claim,
+  // and charge for overshoot: the old sum of matched miles literally rewarded
+  // wrong-carriageway detours, because 25 wrong miles of I-40 outscored the
+  // correct 11.
   const score = (rs: LegReport[]) =>
-    rs.reduce((s, r) => s + (r.refMatch ?? 1) * (r.routedMiles ?? 0), 0)
+    rs.reduce((s, r) => {
+      const routed = r.routedMiles ?? 0
+      const cap = r.claimedMiles > 0 ? r.claimedMiles : routed
+      return s + (r.refMatch ?? 1) * Math.min(routed, cap) - 0.7 * Math.max(0, routed - (cap * 1.25 + 1))
+    }, 0)
 
   // Snap refinement runs only when validation says a snap went wrong. Most
   // builds route correctly straight from the raw junction points, so most
@@ -60,7 +82,7 @@ export async function buildRoute(input: string, options: BuildOptions = {}): Pro
     await refineWaypoints(source, parsed, resolved, progress)
     const chainR = usable()
     try {
-      const osrmR = await routeChain(chainR.map((w) => ({ pos: w.pos, bearing: w.bearing })))
+      const osrmR = await routeChain(chainR.map((w) => ({ pos: w.pos, bearing: w.bearing })), undefined, targetsFor(chainR))
       const reportsR = legReports(parsed, chainR, osrmR)
       if (score(reportsR) >= score(reports)) {
         osrm = osrmR
@@ -94,7 +116,7 @@ export async function buildRoute(input: string, options: BuildOptions = {}): Pro
       resolved.waypoints[wpIdx].pos = resolved.waypoints[wpIdx].alternates[0]
       const chain2 = usable()
       try {
-        const osrm2 = await routeChain(chain2.map((w) => ({ pos: w.pos, bearing: undefined })))
+        const osrm2 = await routeChain(chain2.map((w) => ({ pos: w.pos, bearing: undefined })), undefined, targetsFor(chain2))
         const reports2 = legReports(parsed, chain2, osrm2)
         if (score(reports2) > score(reports)) {
           osrm = osrm2
