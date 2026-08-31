@@ -48,15 +48,30 @@ export async function determineState(parsed: ParsedRoute, override?: string): Pr
     if (candidates.length > 1) {
       const road = parsed.origin.type === 'border' ? parsed.origin.road : parsed.legs[0]?.roads[0]
       if (road) {
+        // A failed probe says nothing about its candidate; an answered "no"
+        // is evidence against one. Falling back to the first candidate on
+        // any error once sent an Oklahoma-to-New-Mexico route to Colorado.
+        const denied: string[] = []
+        let threw = 0
         for (const c of candidates) {
-          // A probe that cannot reach OSM must not sink the build; the first
-          // candidate is the better guess than no route at all.
           try {
             if (await roadExists(c, road)) return c
+            denied.push(c)
           } catch {
-            break
+            threw++
           }
         }
+        if (threw === candidates.length) {
+          throw new Error(
+            `Could not confirm which state this route crosses (candidates: ${candidates.join(', ')}) — the map servers are not answering. Retry, or pick the state manually.`,
+          )
+        }
+        // No candidate confirmed. Prefer one that was not positively denied
+        // (its probe failed, so it is merely unknown); if every answered
+        // probe said no, the road ref is likely one OSM writes differently,
+        // and the first candidate is the conventional reading.
+        const unknown = candidates.find((c) => !denied.includes(c))
+        return unknown ?? candidates[0]
       }
       return candidates[0]
     }
@@ -392,7 +407,17 @@ export async function resolveWaypoints(
         if (isCancel(e)) throw e
       }
     }
-    perPair.push({ cands: candidates.slice(0, 8), exits })
+    // Rank before capping. The list arrives in server output order, which is
+    // spatially biased; a blind slice(0, 8) once cut the far crossing of a
+    // loop road and forced both of its junctions onto the same corner. Order
+    // by consistency with the claimed mileage from the previous junction —
+    // the same yardstick the chain solver scores with — so the cap keeps the
+    // plausible candidates and only sheds the noise.
+    if (greedyPrev && a.claimedMiles > 0) {
+      const err = (c: JunctionPoint) => Math.abs(fastDist(greedyPrev!, c.pos) * 1.15 - a.claimedMiles * MI)
+      candidates = [...candidates].sort((x, y) => err(x) - err(y))
+    }
+    perPair.push({ cands: candidates.slice(0, 24), exits })
 
     // Advance a provisional position so later fallbacks and minGap filters
     // have something local to work from; the DP below makes the real choice.

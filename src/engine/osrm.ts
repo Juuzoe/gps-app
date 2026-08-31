@@ -45,7 +45,10 @@ export async function osrmRoute(points: RoutePoint[], useBearings = true): Promi
     params += `&bearings=${bearings}&radiuses=${radiuses}`
   }
   let lastErr: unknown
-  for (const base of MIRRORS) {
+  // Two passes: OSRM mirrors flake for seconds at a time, and one transient
+  // 'fetch failed' must cost a retry, not the segment it was carrying.
+  for (const base of [...MIRRORS, ...MIRRORS]) {
+    if (lastErr) await new Promise((r) => setTimeout(r, 1200))
     try {
       const res = await fetch(`${base}/route/v1/driving/${coords}?${params}`, {
         headers: { 'User-Agent': 'route-navigator/1.0 (oversize permit routing)' },

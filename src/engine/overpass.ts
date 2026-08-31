@@ -535,19 +535,32 @@ export async function roadExists(stateCode: string, ref: RoadRef): Promise<boole
   if (!bb) return false
   const { loadStatePolygon } = await import('./statepoly')
   await loadStatePolygon(stateCode)
+  // Sample in id order, never `qt`: quadtile order is spatially biased, so a
+  // capped sample of a long road collapses onto one corner of the bbox — and
+  // a bbox corner can lie OUTSIDE the state. The Texas box's west edge sits
+  // exactly on Albuquerque, so a qt sample of I-40 returned 200 New Mexican
+  // ways, the clip rejected them all, and "I-40 is not in Texas" got cached.
+  // The count output makes the response non-empty even for a road the state
+  // does not have, so the honest negative is cacheable too.
   const q =
     `[out:json][timeout:60];way(${bb[0]},${bb[1]},${bb[2]},${bb[3]})` +
-    `[highway~"${HIGHWAY}"][ref~"${ref.osmRefRegex}"];out center qt 200;`
-  const json = await overpass(q, `exists4:${stateCode}:${ref.key}`, 45_000)
+    `[highway~"${HIGHWAY}"][ref~"${ref.osmRefRegex}"]->.r;.r out count;.r out center 200;`
+  const json = await overpass(q, `exists5:${stateCode}:${ref.key}`, 60_000)
   const pts: LatLng[] = (json.elements ?? [])
     .filter((e: any) => e.center)
     .map((e: any) => ({ lat: e.center.lat, lng: e.center.lon }))
   if (!pts.length) return false
-  // clipToState keeps everything when the outline is unknown; being unable to
-  // clip must not manufacture existence, so require the outline here.
   const { hasStatePolygon, isInState } = await import('./statepoly')
-  if (!hasStatePolygon(stateCode)) return pts.length > 0
-  return pts.some((p) => isInState(stateCode, p))
+  if (hasStatePolygon(stateCode)) return pts.some((p) => isInState(stateCode, p))
+  // Outline unknown (its service unreachable): being unable to clip must not
+  // manufacture existence from bbox-corner leakage, so accept only samples
+  // well inside the bbox — neighbouring states reach at most a fraction of a
+  // degree past a border into the box.
+  const inset = 0.25
+  return pts.some(
+    (p) =>
+      p.lat > bb[0] + inset && p.lat < bb[2] - inset && p.lng > bb[1] + inset && p.lng < bb[3] - inset,
+  )
 }
 
 /** Exit (motorway_junction) nodes with a given ref, near a point. */

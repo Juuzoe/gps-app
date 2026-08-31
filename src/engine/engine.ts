@@ -59,6 +59,15 @@ export async function buildRoute(input: string, options: BuildOptions = {}): Pro
     targetsFor(chain),
   )
 
+  // Zero routed distance across every segment means the routing service was
+  // unreachable, not that the route resolved wrongly — say so, instead of
+  // letting the wrong-place verdict blame the resolution.
+  if (osrm.distance === 0 && chain.length >= 2) {
+    throw new Error(
+      'The routing service (OSRM) is unreachable right now. The junctions resolved fine and are cached — retry in a minute and the route will build without refetching.',
+    )
+  }
+
   progress({ phase: 'validate', message: 'Checking the route against the instructions…', ratio: 0.88 })
   let reports = legReports(parsed, chain, osrm)
   // Credit miles routed on matching roads only up to the instruction's claim,

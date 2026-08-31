@@ -263,13 +263,24 @@ export async function discover(
           parseChunk(state, json, out)
         } catch (e) {
           if (e instanceof CancelledError) throw e
-          // Retry this chunk one road-pair at a time before giving up: a
-          // failed chunk used to send every pair in it down the geometry
-          // fallback, which costs far more than re-asking in smaller pieces.
+          // Retry this chunk one spec at a time before giving up: a failed
+          // chunk used to send every pair in it down the geometry fallback —
+          // and silently lose its edge sweeps, which is how a border endpoint
+          // vanished and sank a whole build during one mirror outage.
           let recovered = 0
-          for (const p of chunks[mine].pairs) {
-            const solo: Chunk = { pairs: [p], edges: [], roads: new Map() }
-            for (const r of [...p.a, ...p.b]) solo.roads.set(r.key, r)
+          const soloChunks: Chunk[] = [
+            ...chunks[mine].pairs.map((p): Chunk => {
+              const solo: Chunk = { pairs: [p], edges: [], roads: new Map() }
+              for (const r of [...p.a, ...p.b]) solo.roads.set(r.key, r)
+              return solo
+            }),
+            ...chunks[mine].edges.map((e): Chunk => {
+              const solo: Chunk = { pairs: [], edges: [e], roads: new Map() }
+              solo.roads.set(e.road.key, e.road)
+              return solo
+            }),
+          ]
+          for (const solo of soloChunks) {
             try {
               const sbox = boxOf(solo)
               const j = await overpassQuery(
@@ -284,7 +295,7 @@ export async function discover(
               if (e2 instanceof CancelledError) throw e2
             }
           }
-          if (recovered < chunks[mine].pairs.length) out.failedChunks++
+          if (recovered < soloChunks.length) out.failedChunks++
           // ensure the ids exist so callers see "no candidates" rather than
           // "not asked", and fall back per pair
           for (const p of chunks[mine].pairs) if (!out.pairs.has(p.id)) out.pairs.set(p.id, { shared: [], near: [] })
