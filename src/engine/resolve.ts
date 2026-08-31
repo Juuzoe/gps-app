@@ -478,6 +478,40 @@ export async function resolveWaypoints(
     runStart = runEnd + 1
   }
 
+  // Discard junctions the claimed mileage cannot support.
+  //
+  // The chain solver must pick something from every non-empty candidate list,
+  // so when the real junction is absent from OSM it settles for the least-bad
+  // candidate — which can sit at the far end of a long road. One permit turns
+  // off Spur 57 after 0.3 mi, Spur 57 runs ten miles, and OSM records no
+  // connection at all between it and the road the permit turns onto, so the
+  // chain routed ten miles up the spur and back.
+  //
+  // The claimed mileage is the instruction's own statement of how far apart
+  // consecutive junctions are, so a candidate many times farther than that is
+  // not evidence of a junction. Dropping it hands the pair to the existing
+  // "never meet" path: the turn is flagged and bridged, which is both honest
+  // and shorter than the detour. The allowance is deliberately loose (3x plus
+  // 8km) because source mileages are approximate; this catches misplacement,
+  // not imprecision.
+  {
+    let ref = prev
+    for (let k = 0; k < chosen.length; k++) {
+      const c = chosen[k]
+      if (!c) continue
+      const claimedM = (legs[k]?.claimedMiles ?? 0) * MI
+      if (ref && claimedM > 0) {
+        const gap = fastDist(ref, c.pos)
+        if (gap > claimedM * 3 + 8_000) {
+          chosen[k] = undefined
+          altOf[k] = []
+          continue
+        }
+      }
+      ref = c.pos
+    }
+  }
+
   // Emit waypoints in route order.
   for (let k = 0; k < legs.length - 1; k++) {
     const a = legs[k]
