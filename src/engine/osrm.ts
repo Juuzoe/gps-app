@@ -199,6 +199,25 @@ export async function routeChain(
     }),
   )
 
+  // The public OSRM instances flake in waves of seconds; a pair that ran
+  // inside a wave failed for being unlucky, not for being unroutable. One
+  // more sweep after a pause turns a blip into a delay instead of a hole in
+  // the route — six consecutive segments once died to a single wave.
+  if (segs.some((s0) => !s0)) {
+    await new Promise((r) => setTimeout(r, 4000))
+    for (let i = 0; i < segs.length; i++) {
+      if (segs[i]) continue
+      const t = target(i)
+      for (const v of [() => osrmRoute([points[i], { pos: points[i + 1].pos }], true), () => osrmRoute([points[i], points[i + 1]], false)]) {
+        try {
+          const r = await v()
+          if (!segs[i] || (t !== undefined && Math.abs(r.distance / MI - t) < Math.abs(segs[i]!.distance / MI - t))) segs[i] = r
+          if (t === undefined || Math.abs(r.distance / MI - t) <= Math.max(1, t * 0.25)) break
+        } catch { /* still down; the straight-line bridge below reports it */ }
+      }
+    }
+  }
+
   // Neighbouring pairs can snap the shared waypoint to different places (the
   // whole point of the variants); where they landed far apart, re-route the
   // left pair onto the right pair's snap so the stitched line is continuous.
