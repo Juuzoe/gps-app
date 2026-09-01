@@ -94,6 +94,19 @@ function parseTurnLines(items: string[], format: 'turns-json' | 'lines'): Parsed
   const legs = legsFromTurnInstructions(instructions)
   const stateHint = inferStateFromBorders(origin, destination, legs)
   const claimed = legs.reduce((s, l) => s + (l.claimedMiles || 0), 0)
+  // Free-text lines fall back to street legs so real street names survive —
+  // but a paste with no road refs, no endpoints, and no mileages anywhere is
+  // prose, not a route. Without this, "hello this is not a route" became two
+  // street legs and burned network lookups before failing confusingly.
+  if (
+    format === 'lines' &&
+    origin.type === 'unknown' &&
+    destination.type === 'unknown' &&
+    claimed === 0 &&
+    legs.every((l) => l.kind === 'street')
+  ) {
+    return { format, instructions, legs: [], origin, destination, stateHint, problems }
+  }
   return {
     format, instructions, legs, origin, destination, stateHint,
     claimedTotalMiles: claimed > 0 ? claimed : undefined, problems,

@@ -33,8 +33,26 @@ export interface RoutePoint {
   bearing?: number
 }
 
+/**
+ * Circuit breaker for a full router outage.
+ *
+ * A dead OSRM host costs a ~20s connect timeout per attempt, and the pairwise
+ * rescue makes dozens of attempts — with every host down, one build hammered
+ * dead connections for twenty minutes before its honest failure. After enough
+ * consecutive whole-call failures the router is declared down for a cooldown,
+ * later calls fail instantly, and the build reports the outage right away.
+ * Any success resets the streak.
+ */
+let osrmFailStreak = 0
+let osrmDownUntil = 0
+const OSRM_BREAK_AFTER = 4
+const OSRM_COOLDOWN_MS = 90_000
+
 export async function osrmRoute(points: RoutePoint[], useBearings = true): Promise<OsrmRoute> {
   if (points.length < 2) throw new Error('Need at least two waypoints')
+  if (Date.now() < osrmDownUntil) {
+    throw new Error('OSRM: unreachable (cooling down after repeated failures)')
+  }
   const coords = points.map((p) => `${p.pos.lng.toFixed(6)},${p.pos.lat.toFixed(6)}`).join(';')
   let params = 'overview=full&geometries=geojson&steps=true'
   if (useBearings && points.some((p) => p.bearing !== undefined)) {
@@ -58,9 +76,12 @@ export async function osrmRoute(points: RoutePoint[], useBearings = true): Promi
       })
       const json: any = await res.json()
       if (json.code !== 'Ok' || !json.routes?.length) {
+        // The router answered; an unroutable pair is not an outage.
+        osrmFailStreak = 0
         lastErr = new Error(`OSRM: ${json.code ?? res.status}${json.message ? ` — ${json.message}` : ''}`)
         continue
       }
+      osrmFailStreak = 0
       const r = json.routes[0]
       return {
         geometry: r.geometry.coordinates as [number, number][],
@@ -76,6 +97,10 @@ export async function osrmRoute(points: RoutePoint[], useBearings = true): Promi
     } catch (e) {
       lastErr = e
     }
+  }
+  // Every mirror failed at the network level for this whole call.
+  if (++osrmFailStreak >= OSRM_BREAK_AFTER) {
+    osrmDownUntil = Date.now() + OSRM_COOLDOWN_MS
   }
   throw lastErr instanceof Error ? lastErr : new Error('OSRM request failed')
 }
