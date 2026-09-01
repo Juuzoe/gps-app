@@ -1,5 +1,6 @@
 import type { LatLng, RoadRef } from './types'
 import { stateInfo } from './states'
+import { proxyHealthy } from './proxy'
 import { clipToState } from './statepoly'
 
 /**
@@ -78,6 +79,22 @@ const UA = 'route-navigator/1.0 (oversize permit routing)'
  * with Safari's "Load failed". A client lost every road fetch to exactly this.
  */
 const ID_HEADER: Record<string, string> = IN_BROWSER ? {} : { 'User-Agent': UA }
+
+/**
+ * Same-origin proxy endpoints (api/op.ts), one per direct upstream so the
+ * probe/breaker/slot machinery treats them exactly like the instances
+ * themselves. Swapped in once per session when the health check passes; on a
+ * static host the check fails fast and the direct list stays.
+ */
+const PROXY_MIRRORS = ['/api/op?u=0', '/api/op?u=1', '/api/op?u=2', '/api/op?u=3']
+
+const isProxyUrl = (url: string) => url.startsWith('/')
+const hostOf = (url: string) => (isProxyUrl(url) ? 'app proxy' : new URL(url).host)
+/** Proxy targets take the raw QL as text/plain; instances take form-encoding. */
+const requestBody = (url: string, query: string) =>
+  isProxyUrl(url)
+    ? { body: query, headers: { 'Content-Type': 'text/plain' } }
+    : { body: 'data=' + encodeURIComponent(query), headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...ID_HEADER } }
 // Ref-carrying roads never sit below `unclassified`; named local streets are
 // fetched separately by fetchStreetWays, which does not filter on class.
 const HIGHWAY = '^(motorway|trunk|primary|secondary|tertiary|unclassified)$'
@@ -156,7 +173,13 @@ let probeRun: Promise<void> | undefined
 /** When a real query last succeeded per mirror — fresher evidence than probes. */
 const lastSuccess = new Array(MIRRORS.length).fill(0)
 
-function ensureMirrorsProbed(): Promise<void> {
+let proxyChecked = false
+
+async function ensureMirrorsProbed(): Promise<void> {
+  if (!proxyChecked) {
+    proxyChecked = true
+    if (IN_BROWSER && (await proxyHealthy())) MIRRORS.splice(0, MIRRORS.length, ...PROXY_MIRRORS)
+  }
   if (Date.now() - lastProbe < PROBE_INTERVAL_MS) return probeRun ?? Promise.resolve()
   lastProbe = Date.now()
   probeRun = Promise.all(
@@ -175,8 +198,7 @@ function ensureMirrorsProbed(): Promise<void> {
       try {
         const res = await fetch(url, {
           method: 'POST',
-          body: 'data=' + encodeURIComponent('[out:json][timeout:5];out count;'),
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...ID_HEADER },
+          ...requestBody(url, '[out:json][timeout:5];out count;'),
           signal: ctrl.signal,
         })
         if (res.ok) mirrorDownUntil[i] = 0
@@ -244,13 +266,12 @@ async function overpass(query: string, cacheKey: string, timeoutMs = 90_000, sta
     try {
       const res = await fetch(url, {
         method: 'POST',
-        body: 'data=' + encodeURIComponent(query),
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...ID_HEADER },
+        ...requestBody(url, query),
         signal: ctrl.signal,
       })
       const text = await res.text()
       if (!res.ok || text.trimStart().startsWith('<')) {
-        lastErr = new OverpassError(`${res.status} from ${new URL(url).host}`)
+        lastErr = new OverpassError(`${res.status} from ${hostOf(url)}`)
         if (res.status >= 500) mirrorDownUntil[idx] = Date.now() + MIRROR_COOLDOWN_MS
         await backoff(attempt)
         continue
@@ -260,7 +281,7 @@ async function overpass(query: string, cacheKey: string, timeoutMs = 90_000, sta
       // elements. Taken at face value that reads as "this road does not exist",
       // which is how whole junctions silently went missing.
       if (typeof json.remark === 'string' && /error|timed out|runtime/i.test(json.remark)) {
-        lastErr = new OverpassError(`${json.remark.trim()} (${new URL(url).host})`)
+        lastErr = new OverpassError(`${json.remark.trim()} (${hostOf(url)})`)
         await backoff(attempt)
         continue
       }
@@ -279,7 +300,7 @@ async function overpass(query: string, cacheKey: string, timeoutMs = 90_000, sta
       }
       return json
     } catch (e) {
-      lastErr = timedOut ? new OverpassError(`timed out on ${new URL(url).host}`) : e
+      lastErr = timedOut ? new OverpassError(`timed out on ${hostOf(url)}`) : e
       // A timeout or a transport error means this host is not answering now.
       mirrorDownUntil[idx] = Date.now() + MIRROR_COOLDOWN_MS
       // An abort means either our timeout (try the next mirror) or the user

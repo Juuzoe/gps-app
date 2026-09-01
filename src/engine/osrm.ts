@@ -1,4 +1,5 @@
 import type { LatLng } from './types'
+import { proxyHealthy } from './proxy'
 
 /** OSRM /route client with mirror fallback (public instances, fair use). */
 
@@ -27,6 +28,10 @@ const MIRRORS = [
   'https://routing.openstreetmap.de/routed-car',
   'https://router.project-osrm.org',
 ]
+// Same-origin proxy endpoints (api/rt.ts); swapped in when the app's host
+// runs the proxy, so client networks only ever see the app's own domain.
+const PROXY_MIRRORS = ['/api/rt?u=0&p=', '/api/rt?u=1&p=']
+let proxyChecked = false
 
 export interface RoutePoint {
   pos: LatLng
@@ -53,6 +58,10 @@ export async function osrmRoute(points: RoutePoint[], useBearings = true): Promi
   if (Date.now() < osrmDownUntil) {
     throw new Error('OSRM: unreachable (cooling down after repeated failures)')
   }
+  if (!proxyChecked) {
+    proxyChecked = true
+    if (typeof document !== 'undefined' && (await proxyHealthy())) MIRRORS.splice(0, MIRRORS.length, ...PROXY_MIRRORS)
+  }
   const coords = points.map((p) => `${p.pos.lng.toFixed(6)},${p.pos.lat.toFixed(6)}`).join(';')
   let params = 'overview=full&geometries=geojson&steps=true'
   if (useBearings && points.some((p) => p.bearing !== undefined)) {
@@ -67,12 +76,17 @@ export async function osrmRoute(points: RoutePoint[], useBearings = true): Promi
   // 'fetch failed' must cost a retry, not the segment it was carrying.
   for (const base of [...MIRRORS, ...MIRRORS]) {
     if (lastErr) await new Promise((r) => setTimeout(r, 1200))
+    const pathQ = `/route/v1/driving/${coords}?${params}`
+    // AbortSignal.timeout crashes Safari before 15.4; a plain controller is
+    // equivalent and runs everywhere.
+    const ctrl = new AbortController()
+    const timer = setTimeout(() => ctrl.abort(), 60_000)
     try {
-      const res = await fetch(`${base}/route/v1/driving/${coords}?${params}`, {
+      const res = await fetch(base.startsWith('/') ? base + encodeURIComponent(pathQ) : base + pathQ, {
         // No custom headers in the browser: a non-safelisted header forces a
         // CORS preflight in WebKit and turns flaky mirrors into dead ones.
         headers: typeof document === 'undefined' ? { 'User-Agent': 'route-navigator/1.0 (oversize permit routing)' } : {},
-        signal: AbortSignal.timeout(60_000),
+        signal: ctrl.signal,
       })
       const json: any = await res.json()
       if (json.code !== 'Ok' || !json.routes?.length) {
@@ -96,6 +110,8 @@ export async function osrmRoute(points: RoutePoint[], useBearings = true): Promi
       }
     } catch (e) {
       lastErr = e
+    } finally {
+      clearTimeout(timer)
     }
   }
   // Every mirror failed at the network level for this whole call.

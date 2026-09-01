@@ -1,0 +1,6 @@
+{
+  "functions": {
+    "api/op.ts": { "maxDuration": 150 },
+    "api/rt.ts": { "maxDuration": 60 }
+  }
+}

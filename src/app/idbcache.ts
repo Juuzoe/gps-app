@@ -5,6 +5,9 @@ import type { Cache } from '../engine/overpass'
 export class IdbCache implements Cache {
   private db?: IDBDatabase
   private ready: Promise<void>
+  /** Safari private mode (and locked-down browsers) block IndexedDB; an
+   *  in-memory map keeps the session cached instead of refetching everything. */
+  private mem = new Map<string, string>()
 
   constructor() {
     this.ready = new Promise((resolve) => {
@@ -25,7 +28,7 @@ export class IdbCache implements Cache {
   async get(key: string): Promise<string | undefined> {
     await this.ready
     const db = this.db
-    if (!db) return undefined
+    if (!db) return this.mem.get(key)
     return new Promise((resolve) => {
       try {
         const tx = db.transaction('kv', 'readonly').objectStore('kv').get(key)
@@ -40,7 +43,10 @@ export class IdbCache implements Cache {
   async set(key: string, value: string): Promise<void> {
     await this.ready
     const db = this.db
-    if (!db) return
+    if (!db) {
+      this.mem.set(key, value)
+      return
+    }
     return new Promise((resolve) => {
       try {
         const tx = db.transaction('kv', 'readwrite').objectStore('kv').put(value, key)
