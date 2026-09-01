@@ -142,6 +142,8 @@ const PROBE_INTERVAL_MS = 90_000
 const PROBE_TIMEOUT_MS = 8_000
 let lastProbe = 0
 let probeRun: Promise<void> | undefined
+/** When a real query last succeeded per mirror — fresher evidence than probes. */
+const lastSuccess = new Array(MIRRORS.length).fill(0)
 
 function ensureMirrorsProbed(): Promise<void> {
   if (Date.now() - lastProbe < PROBE_INTERVAL_MS) return probeRun ?? Promise.resolve()
@@ -151,6 +153,14 @@ function ensureMirrorsProbed(): Promise<void> {
       const ctrl = new AbortController()
       let timedOut = false
       const timer = setTimeout(() => { timedOut = true; ctrl.abort() }, PROBE_TIMEOUT_MS)
+      // A mirror that served a real query since the last probe round is
+      // alive by direct evidence; a failed PROBE against it usually means
+      // the probe lost a rate-limit slot to the real traffic. Marking the
+      // one working mirror down over that kept the UI claiming "none of the
+      // servers are answering" through a working build.
+      const markDown = () => {
+        if (Date.now() - lastSuccess[i] > PROBE_INTERVAL_MS) mirrorDownUntil[i] = Date.now() + MIRROR_COOLDOWN_MS
+      }
       try {
         const res = await fetch(url, {
           method: 'POST',
@@ -159,11 +169,11 @@ function ensureMirrorsProbed(): Promise<void> {
           signal: ctrl.signal,
         })
         if (res.ok) mirrorDownUntil[i] = 0
-        else if (res.status >= 500 || res.status === 429) mirrorDownUntil[i] = Date.now() + MIRROR_COOLDOWN_MS
+        else if (res.status >= 500 || res.status === 429) markDown()
       } catch {
         // Only a probe that failed on its own merits marks the mirror down; an
         // external abort (user cancelled) says nothing about the host.
-        if (timedOut || !ctrl.signal.aborted) mirrorDownUntil[i] = Date.now() + MIRROR_COOLDOWN_MS
+        if (timedOut || !ctrl.signal.aborted) markDown()
       } finally {
         clearTimeout(timer)
       }
@@ -245,6 +255,7 @@ async function overpass(query: string, cacheKey: string, timeoutMs = 90_000, sta
       }
       preferredMirror = idx
       mirrorDownUntil[idx] = 0
+      lastSuccess[idx] = Date.now()
       try {
         if (typeof localStorage !== 'undefined') localStorage.setItem('rb-mirror', String(idx))
       } catch { /* storage unavailable */ }

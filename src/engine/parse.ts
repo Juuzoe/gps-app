@@ -69,6 +69,21 @@ function parseTurnLines(items: string[], format: 'turns-json' | 'lines'): Parsed
       })
       return
     }
+    // Converted permits write the endpoints as the permit does: "Route
+    // Start: BU0059T, 2.3 mi SW of BU0059T & US0059". Same spec grammar as
+    // the permit's Origin/Destination lines.
+    const startSpec = raw.match(/^(?:Route\s+Start|Origin|Start)\s*:\s*(.+)$/i)
+    if (startSpec) {
+      if (origin.type === 'unknown') origin = parseEndpointSpec(startSpec[1])
+      instructions.push({ index, raw, kind: 'origin', roads: [], problems: [] })
+      return
+    }
+    const endSpec = raw.match(/^(?:Route\s+End|Destination|End)\s*:\s*(.+)$/i)
+    if (endSpec) {
+      if (destination.type === 'unknown') destination = parseEndpointSpec(endSpec[1])
+      instructions.push({ index, raw, kind: 'destination', roads: [], problems: [] })
+      return
+    }
     const inst = parseTurnItem(raw, index)
     instructions.push(inst)
     if (inst.kind === 'turn' && inst.roads.length === 0 && !inst.streetName) {
@@ -89,11 +104,21 @@ function parseTurnLines(items: string[], format: 'turns-json' | 'lines'): Parsed
 function parseTurnItem(raw: string, index: number): Instruction {
   let body = raw
   let miles: number | undefined
-  const mi = body.match(/\(([\d.]+)\s*mi(les)?\.?\)/i)
+  const mi = body.match(/\((<\s*)?([\d.]+)\s*mi(les)?\.?\)/i)
   if (mi) {
-    miles = parseFloat(mi[1])
+    // "(<0.1 mi)" is the permit's way of writing "a moment"; call it 0.05.
+    miles = mi[1] ? Math.min(0.05, parseFloat(mi[2])) : parseFloat(mi[2])
     body = body.replace(mi[0], '').trim()
   }
+  // Converted permits carry the table's connector rows verbatim: "IH10 Ramp
+  // W (0.40 mi)", "SH46 Ramp NW". The ramp is part of getting onto the next
+  // road, so the entry folds into the next leg rather than standing alone.
+  let isConnector = false
+  if (/\b(Ramp|Connector)\b/i.test(body)) {
+    isConnector = true
+    body = body.replace(/\b(Ramp|Connector)\b/gi, ' ').replace(/\s+/g, ' ').trim()
+  }
+  body = normalizeRoadText(body)
   let exitRef: string | undefined
   const ex = body.match(/\bExit\s+(\d+[A-Z]?)\b/i)
   if (ex) {
@@ -112,6 +137,7 @@ function parseTurnItem(raw: string, index: number): Instruction {
     roads: roadList?.refs ?? [],
     dir: roadList?.dir,
     isFrontage: roadList?.frontage,
+    isConnector,
     exitRef, toward, miles, problems: [],
   }
   if (!roadList) {
@@ -168,6 +194,9 @@ function normalizeRoadText(s: string): string {
   return s
     .replace(/IH\s*HIGHWAY-?\s*(\d+)/gi, 'IH$1')
     .replace(/-?FRONTAGE-?\s*ROAD/gi, '')
+    // Detached frontage codes ("IH35 WFR"): the frontage runs alongside its
+    // parent, so the code folds away and the parent ref remains.
+    .replace(/\s[NSEWH]{0,2}FR\b/gi, ' ')
     .replace(/FARM[- ]TO[- ]MARKET(?:[- ]ROAD)?[- ](\d+)/gi, 'FM$1')
     .replace(/RANCH[- ]TO[- ]MARKET(?:[- ]ROAD)?[- ](\d+)/gi, 'RM$1')
     .replace(/STATE\s+LOOP\s+(\d+)/gi, 'SL$1')

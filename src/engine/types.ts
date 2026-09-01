@@ -30,6 +30,7 @@ export interface Instruction {
   miles?: number
   isRamp?: boolean
   isFrontage?: boolean
+  /** A ramp/connector entry in the turns dialect; folds into the next leg. */
   isConnector?: boolean
   detour?: string
   /** Roads in the permit row's FROM column (current road when the row starts). */
