@@ -45,15 +45,26 @@ const IN_BROWSER = typeof document !== 'undefined'
 // corporate and school networks in the US commonly block .ru hosts outright —
 // a client saw every fetch die with Safari's "Load failed" for exactly that
 // reason. The breaker and probes still route around whichever host is down.
+// Only instances that carry planet data AND send CORS headers are usable from
+// a page. Measured 2026-09-01 against a real discovery query (identical
+// results from each): mail.ru queues ~9s then runs fast (26s total),
+// openstreetmap.fr answers instantly but computes slowly (70s), the
+// overpass-api.de family is fastest when up but was down all week. Regional
+// instances are excluded — overpass.osm.ch answers happily and returns zero
+// Texas ways, which is worse than an error. Keeping several live means a
+// network that blocks any one host (US corporate filters routinely drop .ru)
+// still has a working path.
 const MIRRORS = IN_BROWSER
   ? [
       'https://overpass-api.de/api/interpreter',
       'https://z.overpass-api.de/api/interpreter',
+      'https://overpass.openstreetmap.fr/api/interpreter',
       'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
     ]
   : [
       'https://overpass-api.de/api/interpreter',
       'https://z.overpass-api.de/api/interpreter',
+      'https://overpass.openstreetmap.fr/api/interpreter',
       'https://overpass.kumi.systems/api/interpreter',
       'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
     ]
