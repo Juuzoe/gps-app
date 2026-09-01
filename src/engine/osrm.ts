@@ -51,7 +51,9 @@ export async function osrmRoute(points: RoutePoint[], useBearings = true): Promi
     if (lastErr) await new Promise((r) => setTimeout(r, 1200))
     try {
       const res = await fetch(`${base}/route/v1/driving/${coords}?${params}`, {
-        headers: { 'User-Agent': 'route-navigator/1.0 (oversize permit routing)' },
+        // No custom headers in the browser: a non-safelisted header forces a
+        // CORS preflight in WebKit and turns flaky mirrors into dead ones.
+        headers: typeof document === 'undefined' ? { 'User-Agent': 'route-navigator/1.0 (oversize permit routing)' } : {},
         signal: AbortSignal.timeout(60_000),
       })
       const json: any = await res.json()

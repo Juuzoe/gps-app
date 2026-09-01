@@ -59,6 +59,14 @@ const MIRRORS = IN_BROWSER
     ]
 
 const UA = 'route-navigator/1.0 (oversize permit routing)'
+/**
+ * Identify ourselves only where it works: node sends the header; browsers use
+ * their own User-Agent, and setting the header in a page does worse than
+ * nothing — it is not CORS-safelisted, so WebKit preflights every request,
+ * and a mirror that ignores OPTIONS (the VK one does) then fails each fetch
+ * with Safari's "Load failed". A client lost every road fetch to exactly this.
+ */
+const ID_HEADER: Record<string, string> = IN_BROWSER ? {} : { 'User-Agent': UA }
 // Ref-carrying roads never sit below `unclassified`; named local streets are
 // fetched separately by fetchStreetWays, which does not filter on class.
 const HIGHWAY = '^(motorway|trunk|primary|secondary|tertiary|unclassified)$'
@@ -147,7 +155,7 @@ function ensureMirrorsProbed(): Promise<void> {
         const res = await fetch(url, {
           method: 'POST',
           body: 'data=' + encodeURIComponent('[out:json][timeout:5];out count;'),
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA },
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...ID_HEADER },
           signal: ctrl.signal,
         })
         if (res.ok) mirrorDownUntil[i] = 0
@@ -216,7 +224,7 @@ async function overpass(query: string, cacheKey: string, timeoutMs = 90_000, sta
       const res = await fetch(url, {
         method: 'POST',
         body: 'data=' + encodeURIComponent(query),
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...ID_HEADER },
         signal: ctrl.signal,
       })
       const text = await res.text()
@@ -603,7 +611,7 @@ export async function geocodeCity(name: string, stateCode: string): Promise<LatL
     'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=us&q=' +
     encodeURIComponent(`${name}, ${stateCode}`)
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': UA } })
+    const res = await fetch(url, { headers: ID_HEADER })
     const json: any[] = await res.json()
     if (!json.length) return undefined
     const p = { lat: parseFloat(json[0].lat), lng: parseFloat(json[0].lon) }
